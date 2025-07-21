@@ -25,8 +25,8 @@ export async function POST(req: Request) {
     });
 
     // Hapus password dari response
-    const adminWithoutPassword = { ...admin };
-    delete adminWithoutPassword.password;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _adminPassword, ...adminWithoutPassword } = admin;
 
     return NextResponse.json({
       success: true,

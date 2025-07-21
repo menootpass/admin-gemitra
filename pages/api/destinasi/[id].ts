@@ -1,7 +1,7 @@
 // pages/api/destinasi/[id].ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const APPSCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz3lxP14J__OOKLIiTQL1PLh0e2CMPAFzGbvKP8BiNT6LdfZ7EWmCIQSPx-JC9Ajl7ThQ/exec';
+const APPSCRIPT_URL = process.env.NEXT_PUBLIC_APPSCRIPT_DESTINASI_URL as string;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;

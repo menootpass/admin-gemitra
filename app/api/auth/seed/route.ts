@@ -32,7 +32,8 @@ export async function POST(req: Request) {
       }
     });
 
-    const { password: _password, ...adminWithoutPassword } = admin;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _adminPassword, ...adminWithoutPassword } = admin;
 
     return NextResponse.json({
       success: true,
