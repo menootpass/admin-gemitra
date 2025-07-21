@@ -32,8 +32,7 @@ export async function POST(req: Request) {
       }
     });
 
-    const adminWithoutPassword = { ...admin };
-    delete adminWithoutPassword.password;
+    const { password: _password, ...adminWithoutPassword } = admin;
 
     return NextResponse.json({
       success: true,
