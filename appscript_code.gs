@@ -109,7 +109,8 @@ function createDestination(data) {
       data.deskripsi || '',
       data.fasilitas || '',
       data.komentar || '',
-      data.dikunjungi || 0
+      data.dikunjungi || 0,
+      data.posisi || ''
     ];
     // Insert data baru
     sheet.appendRow(newData);
@@ -150,7 +151,8 @@ function updateDestination(data) {
       data.deskripsi || '',
       data.fasilitas || '',
       data.komentar || '',
-      data.dikunjungi || 0
+      data.dikunjungi || 0,
+      data.posisi || ''
     ];
     // Update row
     const range = sheet.getRange(rowIndex, 1, 1, updateData.length);
@@ -234,7 +236,8 @@ function setupSpreadsheet() {
         'deskripsi',
         'fasilitas',
         'komentar',
-        'dikunjungi'
+        'dikunjungi',
+        'posisi' // <--- Tambahkan posisi di sini
       ];
       sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     }
