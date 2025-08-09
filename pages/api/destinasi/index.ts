@@ -1,7 +1,7 @@
 // pages/api/destinasi/index.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const APPSCRIPT_URL = process.env.GEMITRA_MAIN_APP_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxKHMKh5fs4l0QcYDq2wdO_Z0HoSvv1OwhHzVaE94m1-A1QgtakQ43xuA0S2Uums1xinA/exec';
+const APPSCRIPT_URL = process.env.NEXT_PUBLIC_GEMITRA_APP_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxKHMKh5fs4l0QcYDq2wdO_Z0HoSvv1OwhHzVaE94m1-A1QgtakQ43xuA0S2Uums1xinA/exec';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // GET: daftar destinasi
