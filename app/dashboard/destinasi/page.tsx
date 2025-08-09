@@ -279,7 +279,7 @@ export default function DestinationsPage() {
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ['all', 'Pantai', 'Gunung', 'Budaya', 'Kota', 'Pulau'];
+  const categories = ['all', 'Alam', 'Budaya & Sejarah', 'Kreatif & Edukasi', 'Kuliner Tersembunyi'];
 
   if (isLoading) {
     return (

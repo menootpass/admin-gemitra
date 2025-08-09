@@ -14,6 +14,7 @@ interface Destination {
   deskripsi: string;
   fasilitas: string;
   posisi: string;
+  harga?: number;
   komentar: string;
   dikunjungi: number;
 }
@@ -32,6 +33,7 @@ export default function EditDestinationPage() {
     fasilitas: '',
     altitude: '',
     longitude: '',
+    harga: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -110,6 +112,7 @@ export default function EditDestinationPage() {
         fasilitas: destination.fasilitas,
         altitude,
         longitude,
+        harga: destination.harga != null ? String(destination.harga) : '',
       });
     } catch (error) {
       console.error('Error loading destination:', error);
@@ -206,6 +209,7 @@ export default function EditDestinationPage() {
         deskripsi: formData.deskripsi,
         fasilitas: formData.fasilitas,
         posisi: posisi,
+        harga: parseFloat(formData.harga) || 0,
         komentar: destination?.komentar || '',
         dikunjungi: destination?.dikunjungi || 0,
       };
@@ -235,16 +239,10 @@ export default function EditDestinationPage() {
   };
 
   const categories = [
-    'Pantai',
-    'Gunung',
-    'Budaya',
-    'Kota',
-    'Pulau',
-    'Taman Nasional',
-    'Air Terjun',
-    'Danau',
-    'Museum',
-    'Tempat Ibadah'
+    'Alam',
+    'Budaya & Sejarah',
+    'Kreatif & Edukasi',
+    'Kuliner Tersembunyi',
   ];
 
   if (isLoading) {
@@ -470,6 +468,27 @@ export default function EditDestinationPage() {
                 />
                 <p className="mt-1 text-sm text-gray-500">
                   Daftar fasilitas yang tersedia di destinasi (opsional)
+                </p>
+              </div>
+
+              {/* Harga */}
+              <div>
+                <label htmlFor="harga" className="block text-sm font-medium text-gray-700 mb-2">
+                  Harga Tiket (Rp)
+                </label>
+                <input
+                  type="number"
+                  id="harga"
+                  name="harga"
+                  value={formData.harga}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contoh: 50000"
+                  min="0"
+                  step="1000"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  Harga tiket masuk destinasi (opsional)
                 </p>
               </div>
 

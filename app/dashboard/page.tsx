@@ -21,7 +21,8 @@ export default function DashboardPage() {
     const userData = localStorage.getItem('adminUser');
     
     if (!token || !userData) {
-      router.push('/login');
+      router.replace('/login');
+      setIsLoading(false);
       return;
     }
 
@@ -30,7 +31,7 @@ export default function DashboardPage() {
       setAdminUser(user);
     } catch (error) {
       console.error('Error parsing user data:', error);
-      router.push('/login');
+      router.replace('/login');
     } finally {
       setIsLoading(false);
     }

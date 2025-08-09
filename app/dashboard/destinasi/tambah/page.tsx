@@ -132,16 +132,10 @@ export default function AddDestinationPage() {
   };
 
   const categories = [
-    'Pantai',
-    'Gunung',
-    'Budaya',
-    'Kota',
-    'Pulau',
-    'Taman Nasional',
-    'Air Terjun',
-    'Danau',
-    'Museum',
-    'Tempat Ibadah'
+    'Alam',
+    'Budaya & Sejarah',
+    'Kreatif & Edukasi',
+    'Kuliner Tersembunyi',
   ];
 
   return (
