@@ -26,7 +26,6 @@ export default function EditDestinationPage() {
   const [formData, setFormData] = useState({
     nama: '',
     lokasi: '',
-    rating: '',
     kategori: '',
     img: '',
     deskripsi: '',
@@ -46,7 +45,7 @@ export default function EditDestinationPage() {
     if (!destinationId) return; // Jangan fetch jika id tidak ada
 
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbz3lxP14J__OOKLIiTQL1PLh0e2CMPAFzGbvKP8BiNT6LdfZ7EWmCIQSPx-JC9Ajl7ThQ/exec');
+      const response = await fetch('https://script.google.com/macros/s/AKfycbxKHMKh5fs4l0QcYDq2wdO_Z0HoSvv1OwhHzVaE94m1-A1QgtakQ43xuA0S2Uums1xinA/exec?endpoint=destinations');
       
       if (!response.ok) {
         throw new Error('Failed to fetch destinations');
@@ -73,12 +72,40 @@ export default function EditDestinationPage() {
         }
       }
 
+      // Parse image URLs from JSON array to Google Drive IDs
+      let imgString = '';
+      if (destination.img && typeof destination.img === 'string' && destination.img.startsWith('[') && destination.img.endsWith(']')) {
+        try {
+          const imgArray = JSON.parse(destination.img) as string[];
+                  // Extract Google Drive IDs from full URLs
+        imgString = imgArray
+          .map((url: string) => {
+            const match = url.match(/id=([^&]+)/);
+            return match ? match[1] : url;
+          })
+          .join(', ');
+        } catch (e) {
+          console.error('Failed to parse img:', e);
+          imgString = destination.img.replace(/^\[|\]$/g, ''); // Fallback if JSON parsing fails
+        }
+      } else if (typeof destination.img === 'string') {
+        // Try to extract ID from single URL
+        const match = destination.img.match(/id=([^&]+)/);
+        imgString = match ? match[1] : destination.img;
+      } else if (Array.isArray(destination.img)) {
+        imgString = (destination.img as string[])
+          .map((url: string) => {
+            const match = url.match(/id=([^&]+)/);
+            return match ? match[1] : url;
+          })
+          .join(', ');
+      }
+
       setFormData({
         nama: destination.nama,
         lokasi: destination.lokasi,
-        rating: destination.rating.toString(),
         kategori: destination.kategori,
-        img: destination.img,
+        img: imgString,
         deskripsi: destination.deskripsi,
         fasilitas: destination.fasilitas,
         altitude,
@@ -136,10 +163,6 @@ export default function EditDestinationPage() {
       newErrors.lokasi = 'Lokasi wajib diisi';
     }
 
-    if (!formData.rating || parseFloat(formData.rating) < 0 || parseFloat(formData.rating) > 5) {
-      newErrors.rating = 'Rating harus antara 0-5';
-    }
-
     if (!formData.kategori) {
       newErrors.kategori = 'Kategori wajib dipilih';
     }
@@ -164,12 +187,22 @@ export default function EditDestinationPage() {
 
     try {
       const posisi = `[${formData.altitude || "0"}, ${formData.longitude || "0"}]`;
+      // Convert comma-separated Google Drive IDs to full URLs and JSON array
+      let imgArray: string[] = [];
+      if (formData.img.trim()) {
+        imgArray = formData.img
+          .split(',')
+          .map(id => id.trim())
+          .filter(id => id.length > 0)
+          .map(id => `https://drive.google.com/uc?export=view&id=${id}`);
+      }
+
       const updateData = {
         nama: formData.nama,
         lokasi: formData.lokasi,
-        rating: parseFloat(formData.rating),
+        rating: destination?.rating || 0, // Keep existing rating
         kategori: formData.kategori,
-        img: formData.img,
+        img: JSON.stringify(imgArray),
         deskripsi: formData.deskripsi,
         fasilitas: formData.fasilitas,
         posisi: posisi,
@@ -350,29 +383,7 @@ export default function EditDestinationPage() {
                 />
               </div>
 
-              {/* Rating */}
-              <div>
-                <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-2">
-                  Rating (0-5) *
-                </label>
-                <input
-                  type="number"
-                  id="rating"
-                  name="rating"
-                  value={formData.rating}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.rating ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Contoh: 4.5"
-                  min="0"
-                  max="5"
-                  step="0.1"
-                />
-                {errors.rating && (
-                  <p className="mt-1 text-sm text-red-600">{errors.rating}</p>
-                )}
-              </div>
+
 
               {/* Kategori */}
               <div>
@@ -400,22 +411,25 @@ export default function EditDestinationPage() {
                 )}
               </div>
 
-              {/* URL Gambar */}
+              {/* Google Drive Image IDs */}
               <div className="md:col-span-2">
                 <label htmlFor="img" className="block text-sm font-medium text-gray-700 mb-2">
-                  URL Gambar
+                  ID Gambar Google Drive (Pisahkan dengan koma)
                 </label>
-                <input
-                  type="url"
+                <textarea
                   id="img"
                   name="img"
                   value={formData.img}
                   onChange={handleInputChange}
+                  rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="1ogOWNfqW7LmFF8kPhiXGGiTkuk8glTsl, 1oe8R7nbiDAi2gu3-SP6HDCY_H73aYQaH, 1abc123def456ghi789"
                 />
                 <p className="mt-1 text-sm text-gray-500">
-                  Masukkan URL gambar destinasi (opsional)
+                  Masukkan ID gambar dari Google Drive, pisahkan dengan koma (opsional)
+                </p>
+                <p className="mt-1 text-xs text-blue-600">
+                  💡 Cara dapat ID: Upload gambar ke Google Drive → Klik kanan → &quot;Get link&quot; → Copy ID dari URL
                 </p>
               </div>
 

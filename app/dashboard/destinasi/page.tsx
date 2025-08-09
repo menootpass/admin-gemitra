@@ -5,6 +5,154 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
+// Komponen ImageSlider untuk menampilkan multiple gambar
+const ImageSlider = ({ images, alt }: { images: string, alt: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [hasError, setHasError] = useState(false);
+  
+  // Error boundary untuk ImageSlider
+  if (hasError) {
+    return (
+      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+        <div className="text-center">
+          <svg className="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <p className="text-sm text-gray-500">Gagal memuat gambar</p>
+        </div>
+      </div>
+    );
+  }
+
+  const nextImage = () => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === parsedImages.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === 0 ? parsedImages.length - 1 : prevIndex - 1
+    );
+  };
+
+  const goToImage = (index: number) => {
+    setCurrentIndex(index);
+  };
+
+  // Parse images dari string array format dengan error handling yang lebih robust
+  const parsedImages = (() => {
+    try {
+      // Jika images kosong atau tidak valid
+      if (!images || images.trim() === '') {
+        return [];
+      }
+
+      // Coba parse sebagai JSON array
+      if (images.startsWith('[') && images.endsWith(']')) {
+        try {
+          return JSON.parse(images) as string[];
+        } catch (e) {
+          // Coba parse sebagai comma-separated string dengan berbagai format
+          let urls: string[] = [];
+          
+          // Hapus bracket dan quotes
+          const cleanString = images
+            .replace(/^\[|\]$/g, '') // Hapus bracket
+            .replace(/"/g, '') // Hapus quotes
+            .replace(/'/g, ''); // Hapus single quotes
+          
+          // Split berdasarkan comma
+          const urlParts = cleanString.split(',');
+          
+          // Clean dan filter URLs
+          urls = urlParts
+            .map(url => url.trim())
+            .filter(url => url && (url.startsWith('http://') || url.startsWith('https://')));
+          
+          return urls;
+        }
+      }
+
+      // Jika bukan array format, treat sebagai single image
+      return [images];
+    } catch (error) {
+      setHasError(true);
+      return [];
+    }
+  })();
+
+  if (parsedImages.length === 0) {
+    return (
+      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-48 bg-gray-200 overflow-hidden">
+      {/* Gambar utama */}
+      <Image
+        src={parsedImages[currentIndex]}
+        alt={`${alt} - Gambar ${currentIndex + 1}`}
+        className="w-full h-full object-cover"
+        width={300}
+        height={200}
+        priority={currentIndex === 0} // Priority hanya untuk gambar pertama
+        onError={() => setHasError(true)}
+      />
+      
+      {/* Navigation buttons */}
+      {parsedImages.length > 1 && (
+        <>
+          {/* Previous button */}
+          <button
+            onClick={prevImage}
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all duration-200"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          {/* Next button */}
+          <button
+            onClick={nextImage}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all duration-200"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          
+          {/* Dots indicator */}
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+            {parsedImages.map((_: string, index: number) => (
+              <button
+                key={index}
+                onClick={() => goToImage(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  index === currentIndex 
+                    ? 'bg-white' 
+                    : 'bg-white bg-opacity-50 hover:bg-opacity-75'
+                }`}
+              />
+            ))}
+          </div>
+          
+          {/* Image counter */}
+          <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+            {currentIndex + 1} / {parsedImages.length}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 interface Destination {
   id: number;
   nama: string;
@@ -14,6 +162,7 @@ interface Destination {
   img: string;
   deskripsi: string;
   fasilitas: string;
+  harga?: number;
   komentar: string;
   dikunjungi: number;
 }
@@ -45,7 +194,7 @@ export default function DestinationsPage() {
 
   const loadDestinations = async () => {
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbz3lxP14J__OOKLIiTQL1PLh0e2CMPAFzGbvKP8BiNT6LdfZ7EWmCIQSPx-JC9Ajl7ThQ/exec');
+      const response = await fetch('https://script.google.com/macros/s/AKfycbxKHMKh5fs4l0QcYDq2wdO_Z0HoSvv1OwhHzVaE94m1-A1QgtakQ43xuA0S2Uums1xinA/exec?endpoint=destinations');
       
       if (!response.ok) {
         throw new Error('Failed to fetch destinations');
@@ -53,8 +202,8 @@ export default function DestinationsPage() {
       
       const result: ApiResponse = await response.json();
       setDestinations(result.data || []);
-    } catch (error) {
-      console.error('Error loading destinations:', error);
+    } catch {
+      // silent
       // Fallback to mock data if API fails
       const mockDestinations: Destination[] = [
         {
@@ -63,9 +212,10 @@ export default function DestinationsPage() {
           lokasi: 'Bali, Indonesia',
           rating: 4.5,
           kategori: 'Pantai',
-          img: '/api/placeholder/300/200',
+          img: '["https://drive.google.com/uc?export=view&id=1ogOWNfqW7LmFF8kPhiXGGiTkuk8glTsl","https://drive.google.com/uc?export=view&id=1oe8R7nbiDAi2gu3-SP6HDCY_H73aYQaH"]',
           deskripsi: 'Pulau Dewata dengan pantai indah dan budaya yang kaya',
           fasilitas: 'Parkir, Toilet, Restoran, WiFi, Hotel',
+          harga: 50000,
           komentar: 'Tempat yang sangat indah',
           dikunjungi: 1500
         },
@@ -75,9 +225,10 @@ export default function DestinationsPage() {
           lokasi: 'Yogyakarta, Indonesia',
           rating: 4.2,
           kategori: 'Budaya',
-          img: '/api/placeholder/300/200',
+          img: '[https://drive.google.com/uc?export=view&id=1ogOWNfqW7LmFF8kPhiXGGiTkuk8glTsl, https://drive.google.com/uc?export=view&id=1oe8R7nbiDAi2gu3-SP6HDCY_H73aYQaH]',
           deskripsi: 'Kota budaya dengan candi-candi bersejarah',
           fasilitas: 'Parkir, Toilet, Restoran, Museum',
+          harga: 30000,
           komentar: 'Budaya yang kaya',
           dikunjungi: 1200
         },
@@ -87,9 +238,10 @@ export default function DestinationsPage() {
           lokasi: 'Lombok, Indonesia',
           rating: 4.0,
           kategori: 'Gunung',
-          img: '/api/placeholder/300/200',
+          img: '["https://drive.google.com/uc?export=view&id=1oe8R7nbiDAi2gu3-SP6HDCY_H73aYQaH","https://drive.google.com/uc?export=view&id=1ogOWNfqW7LmFF8kPhiXGGiTkuk8glTsl"]',
           deskripsi: 'Pulau dengan pantai eksotis dan gunung Rinjani',
           fasilitas: 'Parkir, Toilet, Camping Area',
+          harga: 75000,
           komentar: 'Alam yang eksotis',
           dikunjungi: 800
         }
@@ -217,15 +369,7 @@ export default function DestinationsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredDestinations.map((destination) => (
             <div key={destination.id} className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="aspect-w-16 aspect-h-9 bg-gray-200">
-                <Image
-                  src={destination.img}
-                  alt={destination.nama}
-                  className="w-full h-48 object-cover"
-                  width={300}
-                  height={200}
-                />
-              </div>
+              <ImageSlider images={destination.img} alt={destination.nama} />
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-lg font-semibold text-gray-900">{destination.nama}</h3>
@@ -250,6 +394,14 @@ export default function DestinationsPage() {
                     </span>
                   )}
                 </div>
+                {destination.harga && destination.harga > 0 && (
+                  <div className="mb-3">
+                    <span className="text-sm font-medium text-green-600">
+                      Rp {destination.harga.toLocaleString('id-ID')}
+                    </span>
+                    <span className="text-xs text-gray-500 ml-1">/tiket</span>
+                  </div>
+                )}
                 <div className="flex space-x-2">
                                   <Link
                   href={`/dashboard/destinasi/edit/${destination.id.toString()}`}
